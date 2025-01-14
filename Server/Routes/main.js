@@ -13,7 +13,7 @@ router.get('', async (req, res) => {
     
     try {
         const locals = {
-            pageTitle : "Bloggr home",
+            title : "Bloggr home",
             description : "A simple blog web application, enabling you to share your deepests thoughts. Built upon the mighty NodeJS, with the help of legends like MongoDB and Express"
         }
 
@@ -33,7 +33,7 @@ router.get('', async (req, res) => {
             locals,
             data,
             current: page,
-            nextPage: hasNextPage ? nextPage : null;
+            nextPage: hasNextPage ? nextPage : null
             });
 
      } catch(error) {
@@ -41,6 +41,65 @@ router.get('', async (req, res) => {
      }
 
 });
+
+/**
+ * GET/
+ * POST : id
+ */
+
+router.get('/post/:id', async (req, res) => {
+    try {
+        
+        let idParam = req.params.id;
+        
+        const data = await Post.findById({ _id: idParam});
+        
+        const locals = {
+            title : data.title,
+            description : "A simple blog web application, enabling you to share your deepests thoughts. Built upon the mighty NodeJS, with the help of legends like MongoDB and Express"
+        }
+        res.render('post', { 
+            locals,
+            data,
+            currentRoute: `post/${idParam}`
+         });
+
+    } catch(error) {
+        console.log(error);
+    }
+})
+
+/**
+ * POST/
+ * Post : searchterm
+ */
+
+router.post('/search', async (req, res) => {
+    try {
+        const locals = {
+            title : "Bloggr home",
+            description : "A simple blog web application, enabling you to share your deepests thoughts. Built upon the mighty NodeJS, with the help of legends like MongoDB and Express"
+        }
+
+        let searchTerm = req.body.searchTerm;
+        const searchNoSpecialChar = searchTerm.replace(/[^a-zA-Z0-9 ]/g, "");
+
+        const data = await Post.find({
+            $or: [
+                { title: { $regex: new RegExp(searchNoSpecialChar, 'i')}},
+                { body: { $regex: new RegExp(searchNoSpecialChar, 'i')}}
+            ]
+        });
+
+        res.render("search", {
+            data,
+            locals,
+            searchTerm
+        });
+    } catch(error) {
+        console.log(error);
+    }
+})
 
 
 router.get('/about', (req, res) => {
@@ -54,17 +113,9 @@ router.get('/contact', (req, res) => {
 // function insertPostData () {
 //     Post.insertMany([
 //         {
-//             title: "Building a blog web app",
-//             body: "This is the body text"
-//         },
-//         {
-//             title: "Working on DB functionality",
-//             body: "Only testing if post works for now"
-//         },
-//         {
-//             title: "Hello world",
-//             body: "What's happening?"
-//         },
+//             title: "Noe's story",
+//             body: "blabla"
+//         }
         
 //     ])
 // }
