@@ -102,6 +102,23 @@ router.post('/search', async (req, res) => {
     }
 })
 
+/**
+ * GET/
+ * Admin
+ */
+
+router.get('/admin', async (req, res) => {
+    try {
+      const locals = {
+        title: "Admin mode",
+        description: "A simple blog web application, enabling you to share your deepests thoughts. Built upon the mighty NodeJS, with the help of legends like MongoDB and Express"
+      }
+  
+      res.render('admin/adminIndex', { locals, currentRoute: '/admin'});
+    } catch (error) {
+      console.log(error);
+    }
+});
 
 router.get('/about', (req, res) => {
     res.render('about', { currentRoute: '/about' })
@@ -110,6 +127,8 @@ router.get('/about', (req, res) => {
 router.get('/contact', (req, res) => {
     res.render('contact', { currentRoute: '/contact'})
 })
+
+
 
 
 module.exports = router;

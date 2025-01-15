@@ -119,14 +119,19 @@ router.post('/register', async (req, res) => {
         const { username, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        console.log(username, password);
+
         try {
           const user = await User.create({ username, password:hashedPassword });
           res.status(201).json({ message: 'User Created', user });
+          res.render("admin/dashboard");
         } catch (error) {
+          console.log(error);
           if(error.code === 11000) {
             res.status(409).json({ message: 'User already in use'});
           }
-          res.status(500).json({ message: 'Internal server error'})
+          else
+            res.status(500).json({ message: 'Internal server error'})
         }
     } catch (error) {
         console.log(error);
