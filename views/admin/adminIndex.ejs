@@ -5,27 +5,28 @@
             <h3>Sign In</h3>
             <form action="/admin" method="POST">
                 <label for="username"><b>Username</b></label>
-                <input type="text" placeholder="Enter Username" name="Username">
+                <input type="text" placeholder="Enter Username" name="username">
                 
-                <label for="Password"><b>Password</b></label>
-                <input type="password" placeholder="Enter Password" name="Password">
+                <label for="password"><b>Password</b></label>
+                <input type="password" placeholder="Enter Password" name="password">
 
                 <input
-                    name="submitBtn"
+                    name="signInBtn"
                     class="btn btn-primary"
                     type="submit"
-                    value="Login"
+                    value="Sign in"
                 />
             </form>
         </div>
-        <div class="col">
-        <h3>Register</h3>
-            <form action="/admin" method="POST">
-                <label for="username"><b>Username</b></label>
-                <input type="text" placeholder="Enter Username" name="Username">
 
-                <label for="Password"><b>Password</b></label>
-                <input type="password" placeholder="Enter Password" name="Password">
+        <div class="col">
+            <h3>Register</h3>
+            <form action="/register" method="POST">
+                <label for="username"><b>Username</b></label>
+                <input type="text" placeholder="Enter Username" name="username">
+
+                <label for="password"><b>Password</b></label>
+                <input type="password" placeholder="Enter Password" name="password">
 
                 <div style="display: flex; justify-content: right;"> 
                     <input

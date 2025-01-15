@@ -33,7 +33,8 @@ router.get('', async (req, res) => {
             locals,
             data,
             current: page,
-            nextPage: hasNextPage ? nextPage : null
+            nextPage: hasNextPage ? nextPage : null,
+            currentRoute: '/'
             });
 
      } catch(error) {
@@ -103,21 +104,12 @@ router.post('/search', async (req, res) => {
 
 
 router.get('/about', (req, res) => {
-    res.render('about')
+    res.render('about', { currentRoute: '/about' })
 })
 
 router.get('/contact', (req, res) => {
-    res.render('contact')
+    res.render('contact', { currentRoute: '/contact'})
 })
 
-// function insertPostData () {
-//     Post.insertMany([
-//         {
-//             title: "Noe's story",
-//             body: "blabla"
-//         }
-        
-//     ])
-// }
-// insertPostData();
+
 module.exports = router;

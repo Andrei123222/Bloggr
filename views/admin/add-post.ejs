@@ -1,0 +1,14 @@
+<a href="/dashboard">&larr; Go back</a>
+<div class="admin-title">
+    <h2>Add new post</h2>
+</div>
+
+<form action="/add-post" method="POST">
+    <label for="title"><b>Title</b></label>
+    <input type="text" placeholder="Post Title" name="title" class="post-title">
+    
+    <label for="body"><b>Content</b></label>
+    <textarea name="body" cols="50" rows="10" class="post-text" placeholder="  Post Body"></textarea>
+
+    <input type="submit" value="Add" class="btn btn-primary">
+</form>

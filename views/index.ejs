@@ -16,7 +16,7 @@
             <li>
                 <a href="/post/<%= post._id %>">
                     <span><%= post.title %></span>
-                    <span class="article-list__date"><%= post.createdAt.toDateString()%></span>
+                    <span class="article-list__date"><%= post.createdAt.toDateString()%> <br> Updated: <%= post.updatedAt.toDateString()%></span>
                 </a>
             </li>
         <% }) %>
