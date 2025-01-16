@@ -20,7 +20,7 @@ router.get('/admin', async (req, res) => {
         description: "A simple blog web application, enabling you to share your deepests thoughts. Built upon the mighty NodeJS, with the help of legends like MongoDB and Express"
       }
   
-      res.render('admin/adminIndex', { locals, layout: adminLayout });
+      res.render('admin/adminIndex', { locals, layout: adminLayout, currentRoute: '/admin' });
     } catch (error) {
       console.log(error);
     }
@@ -60,9 +60,6 @@ router.post('/admin', async (req, res) => {
     
     const user = await User.findOne( { username } );
 
-    console.log(user);
-    console.log(password);
-
     if(!user) {
       return res.status(401).json( { message: 'Could not find username' } );
     }
@@ -73,8 +70,13 @@ router.post('/admin', async (req, res) => {
       return res.status(401).json( { message: 'Invalid password' } );
     }
 
-    const token = jwt.sign({ userId: user._id}, jwtSecret );
-    res.cookie('token', token, { httpOnly: true });
+    const token = jwt.sign({ userId: user._id, username: user.username}, jwtSecret );
+    console.log(user.username);
+    res.cookie('token', token, { 
+      httpOnly: true,
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000
+    });
     res.redirect('/dashboard');
 
   } catch (error) {
@@ -98,7 +100,8 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
       res.render('admin/dashboard', {
         locals,
         data,
-        layout: adminLayout
+        layout: adminLayout,
+        currentRoute: '/dashboard'
       });
   
     } catch (error) {
@@ -124,7 +127,7 @@ router.post('/register', async (req, res) => {
         try {
           const user = await User.create({ username, password:hashedPassword });
           res.status(201).json({ message: 'User Created', user });
-          res.render("admin/dashboard");
+          res.render("admin/dashboard", { currentRoute: '/dashboard'});
         } catch (error) {
           console.log(error);
           if(error.code === 11000) {
@@ -152,7 +155,8 @@ router.get('/add-post', authMiddleware, async (req, res) => {
       const data = await Post.find();
       res.render('admin/add-post', {
         locals,
-        layout: adminLayout
+        layout: adminLayout,
+        currentRoute: 'add-post'
       });
   
     } catch (error) {
@@ -168,9 +172,13 @@ router.get('/add-post', authMiddleware, async (req, res) => {
 router.post('/add-post', authMiddleware, async (req, res) => {
     try {
       try {
+        const token = req.cookies.token;
+        const decoded = jwt.verify(token, jwtSecret);
+
         const newPost = new Post({
           title: req.body.title,
-          body: req.body.body
+          body: req.body.body,
+          author: decoded.username
         });
 
         await Post.create(newPost);
@@ -201,7 +209,8 @@ router.get('/edit-post/:id', authMiddleware, async (req, res) => {
       res.render('admin/edit-post', {
         locals,
         data,
-        layout: adminLayout
+        layout: adminLayout,
+        currentRoute: 'edit-post'
       })
   
     } catch (error) {
@@ -224,8 +233,6 @@ router.put('/edit-post/:id', authMiddleware, async (req, res) => {
       });
   
       res.redirect('/dashboard');
-      
-      alert("Success");
 
     } catch (error) {
       console.log(error);

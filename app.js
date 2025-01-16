@@ -29,7 +29,7 @@ app.use(session({
     store: MongoStore.create({
         mongoUrl: process.env.MONGODB_URI
     }),
-    cookie: { magAge: new Date( Date.now() + (3600000))}
+    cookie: { magAge: new Date( Date.now() + (3600))}
 }));
 
 app.use(express.static('public'));
