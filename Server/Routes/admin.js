@@ -36,7 +36,7 @@ const authMiddleware = (req, res, next ) => {
     const token = req.cookies.token;
   
     if(!token) {
-      return res.render('admin/unauthorized');
+      return res.render('admin/unauthorized', {currentRoute: "unauthorized"});
     }
   
     try {
@@ -71,7 +71,6 @@ router.post('/admin', async (req, res) => {
     }
 
     const token = jwt.sign({ userId: user._id, username: user.username}, jwtSecret );
-    console.log(user.username);
     res.cookie('token', token, { 
       httpOnly: true,
       secure: true,
@@ -91,11 +90,16 @@ router.post('/admin', async (req, res) => {
 
 router.get('/dashboard', authMiddleware, async (req, res) => {
     try {
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token, jwtSecret);  
+      
       const locals = {
         title: 'Dashboard',
-        description: 'A simple blog web application, enabling you to share your deepests thoughts. Built upon the mighty NodeJS, with the help of legends like MongoDB and Express'
+        description: 'A simple blog web application, enabling you to share your deepests thoughts. Built upon the mighty NodeJS, with the help of legends like MongoDB and Express',
+        username: decoded.username
       }
-  
+      
+
       const data = await Post.find();
       res.render('admin/dashboard', {
         locals,
@@ -122,15 +126,12 @@ router.post('/register', async (req, res) => {
         const { username, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        console.log(username, password);
-
         try {
           const user = await User.create({ username, password:hashedPassword });
           res.status(201).json({ message: 'User Created', user });
           res.render("admin/dashboard", { currentRoute: '/dashboard'});
         } catch (error) {
-          console.log(error);
-          if(error.code === 11000) {
+          if (error.code === 11000) {
             res.status(409).json({ message: 'User already in use'});
           }
           else
@@ -170,26 +171,19 @@ router.get('/add-post', authMiddleware, async (req, res) => {
  * Admin - Create New Post
 */
 router.post('/add-post', authMiddleware, async (req, res) => {
-    try {
-      try {
-        const token = req.cookies.token;
-        const decoded = jwt.verify(token, jwtSecret);
-
-        const newPost = new Post({
-          title: req.body.title,
-          body: req.body.body,
-          author: decoded.username
-        });
-
-        await Post.create(newPost);
-        res.redirect('/dashboard');
-      } catch (error) {
-        console.log(error);
-      }
-
-    } catch (error) {
-      console.log(error);
-    }
+   try {
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, jwtSecret);   
+    const newPost = new Post({
+      title: req.body.title,
+      body: req.body.body,
+      author: decoded.username
+    });  
+    await Post.create(newPost);
+    res.redirect('/dashboard');
+  } catch (error) {
+    console.log(error);
+  }
 });
 
 /**
@@ -205,7 +199,11 @@ router.get('/edit-post/:id', authMiddleware, async (req, res) => {
       };
   
       const data = await Post.findOne({ _id: req.params.id });
-  
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token, jwtSecret);   
+
+      if (decoded.username != data.author)
+        return res.render('admin/unauthorized', {currentRoute: "unauthorized"});
       res.render('admin/edit-post', {
         locals,
         data,
