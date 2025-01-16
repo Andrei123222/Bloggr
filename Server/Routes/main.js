@@ -124,8 +124,17 @@ router.get('/about', (req, res) => {
     res.render('about', { currentRoute: '/about' })
 })
 
-router.get('/contact', (req, res) => {
-    res.render('contact', { currentRoute: '/contact'})
+router.get('/posts', async (req, res) => {
+    try{
+
+    
+    const data = await Post.aggregate( [ { $sort : { createdAt: -1}} ] )
+    .exec();  
+    
+    res.render('posts', { data, currentRoute: '/posts'})
+    } catch(error) {
+        console.log(error);
+    }
 })
 
 
