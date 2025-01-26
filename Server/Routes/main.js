@@ -88,6 +88,7 @@ router.post('/search', async (req, res) => {
         const data = await Post.find({
             $or: [
                 { title: { $regex: new RegExp(searchNoSpecialChar, 'i')}},
+                { author: { $regex: new RegExp(searchNoSpecialChar, 'i')}},
                 { body: { $regex: new RegExp(searchNoSpecialChar, 'i')}}
             ]
         });
@@ -95,7 +96,8 @@ router.post('/search', async (req, res) => {
         res.render("search", {
             data,
             locals,
-            searchTerm
+            searchTerm,
+            currentRoute: "search"
         });
     } catch(error) {
         console.log(error);

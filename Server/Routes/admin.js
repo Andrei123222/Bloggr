@@ -67,7 +67,7 @@ router.post('/admin', async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if(!isPasswordValid) {
-      return res.status(401).json( { message: 'Invalid password' } );
+      return res.status(402).json( { message: 'Invalid password' } );
     }
 
     const token = jwt.sign({ userId: user._id, username: user.username}, jwtSecret );
@@ -76,8 +76,8 @@ router.post('/admin', async (req, res) => {
       secure: true,
       maxAge: 24 * 60 * 60 * 1000
     });
+    
     res.redirect('/dashboard');
-
   } catch (error) {
     console.log(error);
   }
@@ -121,25 +121,20 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
  */
 
 router.post('/register', async (req, res) => {
-    try {
-     
-        const { username, password } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        try {
-          const user = await User.create({ username, password:hashedPassword });
-          res.status(201).json({ message: 'User Created', user });
-          res.render("admin/dashboard", { currentRoute: '/dashboard'});
-        } catch (error) {
-          if (error.code === 11000) {
-            res.status(409).json({ message: 'User already in use'});
-          }
-          else
-            res.status(500).json({ message: 'Internal server error'})
-        }
-    } catch (error) {
-        console.log(error);
+  const { username, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10)
+  try {
+    const user = await User.create({ username, password:hashedPassword });
+    res.status(201).json({ message: 'User Created', user });
+    res.render("admin/dashboard", { currentRoute: '/dashboard'});
+  } catch (error) {
+    if (error.code === 11000) {
+      res.status(409).json({ message: 'User already in use'});
     }
+    else {
+      res.status(500).json({ message: 'Internal server error'});
+    }
+  }
 });
   
 /**
