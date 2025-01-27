@@ -1,3 +1,4 @@
+//npx mocha
 const request = require('supertest');
 const chai = require('chai');
 const express = require('express');

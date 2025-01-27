@@ -4,6 +4,8 @@ const Post = require('../Models/Post');
 const User = require('../Models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { from, of } = require('rxjs');
+const { map, switchMap, catchError } = require('rxjs/operators');
 
 const adminLayout = '../views/layouts/admin';
 const jwtSecret = process.env.jwtSecret;
@@ -54,33 +56,47 @@ const authMiddleware = (req, res, next ) => {
  * Admin / Check Login
  */
 
-router.post('/admin', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    
-    const user = await User.findOne( { username } );
+router.post('/admin', (req, res) => {
+  const { username, password } = req.body;
 
-    if(!user) {
-      return res.status(401).json( { message: 'Could not find username' } );
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if(!isPasswordValid) {
-      return res.status(402).json( { message: 'Invalid password' } );
-    }
-
-    const token = jwt.sign({ userId: user._id, username: user.username}, jwtSecret );
-    res.cookie('token', token, { 
-      httpOnly: true,
-      secure: true,
-      maxAge: 24 * 60 * 60 * 1000
+  of(username).pipe(
+    switchMap((username) =>
+      from(User.findOne({ username })).pipe(
+        map((user) => {
+          if (!user) {
+            throw { status: 401, message: 'Could not find username' };
+          }
+          return user;
+        })
+      )
+    ),
+    switchMap((user) =>
+      from(bcrypt.compare(password, user.password)).pipe(
+        map((isPasswordValid) => {
+          if (!isPasswordValid) {
+            throw { status: 402, message: 'Invalid password' };
+          }
+          return user;
+        })
+      )
+    ),
+    map((user) => {
+      const token = jwt.sign({ userId: user._id, username: user.username }, process.env.jwtSecret);
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: true,
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+      return token;
+    })
+  )
+    .subscribe({
+      next: () => res.redirect('/dashboard'),
+      error: (err) => {
+        console.error(err);
+        res.status(err.status || 500).json({ message: err.message || 'Internal server error' });
+      },
     });
-    
-    res.redirect('/dashboard');
-  } catch (error) {
-    console.log(error);
-  }
 });
 
 /**
